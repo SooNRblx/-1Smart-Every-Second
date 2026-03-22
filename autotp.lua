@@ -17,7 +17,7 @@ local walkSpeedValue = 16
 local jumpPowerValue = 50
 local farmWaitTime = 1.0
 
--- Liste réduite à une seule coordonnée
+-- Liste avec la coordonnée unique demandée
 local locations = {
     Vector3.new(138.336, 18.318, -0.234)
 }
@@ -26,6 +26,8 @@ local locations = {
 local screenGui = Instance.new("ScreenGui", playerGui)
 screenGui.Name = "AppleAutoFarmGui"
 screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999999999 -- Met l'UI au-dessus de tout
+screenGui.IgnoreGuiInset = true    -- Permet de coller les bords de l'écran
 
 local logo = Instance.new("TextButton", screenGui)
 logo.Size = UDim2.new(0, 60, 0, 60)
@@ -326,7 +328,6 @@ task.spawn(function()
     while true do
         if autoFarmActive then
             pcall(function()
-                -- Utilise l'index 1 car il n'y a plus qu'une seule coordonnée
                 player.Character.HumanoidRootPart.CFrame = CFrame.new(locations[1])
             end)
             task.wait(farmWaitTime)
