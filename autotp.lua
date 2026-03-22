@@ -12,12 +12,14 @@ end
 -- 2. VARIABLES
 local farm1Active = false
 local farm5Active = false
+local farm15Active = false
 local walkSpeedValue = 16
 local jumpPowerValue = 50
 local farmWaitTime = 0.30
 
 local pos1 = Vector3.new(225.466, 8, 8.099)
 local pos5 = Vector3.new(225.78, 8, -71.401)
+local pos15 = Vector3.new(244.28, 8, -152.901)
 
 -- 3. INTERFACE
 local screenGui = Instance.new("ScreenGui", playerGui)
@@ -35,8 +37,8 @@ logo.TextSize = 35
 Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 12)
 
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 350, 0, 320) 
-frame.Position = UDim2.new(0.5, -175, 0.5, -160)
+frame.Size = UDim2.new(0, 350, 0, 380) -- Agrandissement pour le 3ème bouton
+frame.Position = UDim2.new(0.5, -175, 0.5, -190)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Visible = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
@@ -70,60 +72,44 @@ scroll.Size = UDim2.new(1, -10, 1, -55)
 scroll.Position = UDim2.new(0, 5, 0, 45)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
-scroll.CanvasSize = UDim2.new(0, 0, 0, 450)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
 scroll.ScrollBarThickness = 2
 
 local layout = Instance.new("UIListLayout", scroll)
 layout.Padding = UDim.new(0, 10)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
---- SECTION +1 WINS ---
-local farmSection1 = Instance.new("Frame", scroll)
-farmSection1.Size = UDim2.new(0, 310, 0, 60)
-farmSection1.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Instance.new("UICorner", farmSection1)
+-- Fonction utilitaire pour créer les sections de farm
+local function createFarmSection(name, parent)
+    local sec = Instance.new("Frame", parent)
+    sec.Size = UDim2.new(0, 310, 0, 60)
+    sec.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Instance.new("UICorner", sec)
 
-local label1 = Instance.new("TextLabel", farmSection1)
-label1.Size = UDim2.new(0, 150, 0, 30)
-label1.Position = UDim2.new(0, 10, 0, 15)
-label1.Text = "+1 Wins" 
-label1.Font = Enum.Font.Gotham
-label1.TextSize = 16
-label1.TextColor3 = Color3.new(1, 1, 1)
-label1.BackgroundTransparency = 1
-label1.TextXAlignment = Enum.TextXAlignment.Left
+    local lab = Instance.new("TextLabel", sec)
+    lab.Size = UDim2.new(0, 150, 0, 30)
+    lab.Position = UDim2.new(0, 10, 0, 15)
+    lab.Text = name
+    lab.Font = Enum.Font.Gotham
+    lab.TextSize = 16
+    lab.TextColor3 = Color3.new(1, 1, 1)
+    lab.BackgroundTransparency = 1
+    lab.TextXAlignment = Enum.TextXAlignment.Left
 
-local btn1 = Instance.new("TextButton", farmSection1)
-btn1.Size = UDim2.new(0, 80, 0, 30)
-btn1.Position = UDim2.new(1, -90, 0, 15)
-btn1.Text = "OFF"
-btn1.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-btn1.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", btn1)
+    local btn = Instance.new("TextButton", sec)
+    btn.Size = UDim2.new(0, 80, 0, 30)
+    btn.Position = UDim2.new(1, -90, 0, 15)
+    btn.Text = "OFF"
+    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", btn)
+    
+    return btn
+end
 
---- SECTION +5 WINS ---
-local farmSection5 = Instance.new("Frame", scroll)
-farmSection5.Size = UDim2.new(0, 310, 0, 60)
-farmSection5.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Instance.new("UICorner", farmSection5)
-
-local label5 = Instance.new("TextLabel", farmSection5)
-label5.Size = UDim2.new(0, 150, 0, 30)
-label5.Position = UDim2.new(0, 10, 0, 15)
-label5.Text = "+5 Wins" 
-label5.Font = Enum.Font.Gotham
-label5.TextSize = 16
-label5.TextColor3 = Color3.new(1, 1, 1)
-label5.BackgroundTransparency = 1
-label5.TextXAlignment = Enum.TextXAlignment.Left
-
-local btn5 = Instance.new("TextButton", farmSection5)
-btn5.Size = UDim2.new(0, 80, 0, 30)
-btn5.Position = UDim2.new(1, -90, 0, 15)
-btn5.Text = "OFF"
-btn5.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-btn5.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", btn5)
+local btn1 = createFarmSection("+1 Wins", scroll)
+local btn5 = createFarmSection("+5 Wins", scroll)
+local btn15 = createFarmSection("+15 Wins", scroll)
 
 --- SECTION MOVEMENT ---
 local moveSection = Instance.new("Frame", scroll)
@@ -224,17 +210,14 @@ setupSlider(sliderJP, dotJP, 50, 350, function(v) jumpPowerValue = v labelJP.Tex
 logo.MouseButton1Up:Connect(function() frame.Visible = not frame.Visible end)
 close.MouseButton1Click:Connect(function() frame.Visible = false end)
 
-btn1.MouseButton1Click:Connect(function()
-    farm1Active = not farm1Active
-    btn1.Text = farm1Active and "ON" or "OFF"
-    btn1.BackgroundColor3 = farm1Active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
-end)
+local function toggleFarm(active, btn)
+    btn.Text = active and "ON" or "OFF"
+    btn.BackgroundColor3 = active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
+end
 
-btn5.MouseButton1Click:Connect(function()
-    farm5Active = not farm5Active
-    btn5.Text = farm5Active and "ON" or "OFF"
-    btn5.BackgroundColor3 = farm5Active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
-end)
+btn1.MouseButton1Click:Connect(function() farm1Active = not farm1Active toggleFarm(farm1Active, btn1) end)
+btn5.MouseButton1Click:Connect(function() farm5Active = not farm5Active toggleFarm(farm5Active, btn5) end)
+btn15.MouseButton1Click:Connect(function() farm15Active = not farm15Active toggleFarm(farm15Active, btn15) end)
 
 -- BOUCLES
 RunService.Stepped:Connect(function()
@@ -252,6 +235,9 @@ task.spawn(function()
             task.wait(farmWaitTime)
         elseif farm5Active then
             pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos5) end)
+            task.wait(farmWaitTime)
+        elseif farm15Active then
+            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos15) end)
             task.wait(farmWaitTime)
         else
             task.wait(0.5)
