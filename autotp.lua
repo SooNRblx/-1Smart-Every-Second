@@ -40,8 +40,8 @@ logo.TextSize = 35
 Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 12)
 
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 350, 0, 400) 
-frame.Position = UDim2.new(0.5, -175, 0.5, -200)
+frame.Size = UDim2.new(0, 350, 0, 300) -- Taille originale rétablie
+frame.Position = UDim2.new(0.5, -175, 0.5, -150)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Visible = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
@@ -75,7 +75,7 @@ scroll.Size = UDim2.new(1, -10, 1, -55)
 scroll.Position = UDim2.new(0, 5, 0, 45)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
-scroll.CanvasSize = UDim2.new(0, 0, 0, 650)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 480) -- La scrollframe gère la hauteur
 scroll.ScrollBarThickness = 2
 
 local layout = Instance.new("UIListLayout", scroll)
