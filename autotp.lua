@@ -10,16 +10,14 @@ if playerGui:FindFirstChild("AppleAutoFarmGui") then
 end
 
 -- 2. VARIABLES
-local autoFarmActive = false
-local antiAfkActive = false
+local farm1Active = false
+local farm5Active = false
 local walkSpeedValue = 16
 local jumpPowerValue = 50
-local farmWaitTime = 0.30 -- Vitesse fixée à 0.30s
+local farmWaitTime = 0.30
 
--- Coordonnées mises à jour
-local locations = {
-    Vector3.new(225.466, 8, 8.099)
-}
+local pos1 = Vector3.new(225.466, 8, 8.099)
+local pos5 = Vector3.new(225.78, 8, -71.401)
 
 -- 3. INTERFACE
 local screenGui = Instance.new("ScreenGui", playerGui)
@@ -37,8 +35,8 @@ logo.TextSize = 35
 Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 12)
 
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 350, 0, 250) -- Taille ajustée (plus petite sans le slider)
-frame.Position = UDim2.new(0.5, -175, 0.5, -125)
+frame.Size = UDim2.new(0, 350, 0, 320) 
+frame.Position = UDim2.new(0.5, -175, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Visible = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
@@ -72,36 +70,60 @@ scroll.Size = UDim2.new(1, -10, 1, -55)
 scroll.Position = UDim2.new(0, 5, 0, 45)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
-scroll.CanvasSize = UDim2.new(0, 0, 0, 400)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 450)
 scroll.ScrollBarThickness = 2
 
 local layout = Instance.new("UIListLayout", scroll)
 layout.Padding = UDim.new(0, 10)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
---- SECTION FARM ---
-local farmSection = Instance.new("Frame", scroll)
-farmSection.Size = UDim2.new(0, 310, 0, 70) -- Taille réduite
-farmSection.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Instance.new("UICorner", farmSection)
+--- SECTION +1 WINS ---
+local farmSection1 = Instance.new("Frame", scroll)
+farmSection1.Size = UDim2.new(0, 310, 0, 60)
+farmSection1.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Instance.new("UICorner", farmSection1)
 
-local labelAF = Instance.new("TextLabel", farmSection)
-labelAF.Size = UDim2.new(0, 150, 0, 30)
-labelAF.Position = UDim2.new(0, 10, 0, 20)
-labelAF.Text = "+1 Wins" 
-labelAF.Font = Enum.Font.Gotham
-labelAF.TextSize = 16
-labelAF.TextColor3 = Color3.new(1, 1, 1)
-labelAF.BackgroundTransparency = 1
-labelAF.TextXAlignment = Enum.TextXAlignment.Left
+local label1 = Instance.new("TextLabel", farmSection1)
+label1.Size = UDim2.new(0, 150, 0, 30)
+label1.Position = UDim2.new(0, 10, 0, 15)
+label1.Text = "+1 Wins" 
+label1.Font = Enum.Font.Gotham
+label1.TextSize = 16
+label1.TextColor3 = Color3.new(1, 1, 1)
+label1.BackgroundTransparency = 1
+label1.TextXAlignment = Enum.TextXAlignment.Left
 
-local btnAF = Instance.new("TextButton", farmSection)
-btnAF.Size = UDim2.new(0, 80, 0, 30)
-btnAF.Position = UDim2.new(1, -90, 0, 20)
-btnAF.Text = "OFF"
-btnAF.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-btnAF.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", btnAF)
+local btn1 = Instance.new("TextButton", farmSection1)
+btn1.Size = UDim2.new(0, 80, 0, 30)
+btn1.Position = UDim2.new(1, -90, 0, 15)
+btn1.Text = "OFF"
+btn1.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+btn1.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", btn1)
+
+--- SECTION +5 WINS ---
+local farmSection5 = Instance.new("Frame", scroll)
+farmSection5.Size = UDim2.new(0, 310, 0, 60)
+farmSection5.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Instance.new("UICorner", farmSection5)
+
+local label5 = Instance.new("TextLabel", farmSection5)
+label5.Size = UDim2.new(0, 150, 0, 30)
+label5.Position = UDim2.new(0, 10, 0, 15)
+label5.Text = "+5 Wins" 
+label5.Font = Enum.Font.Gotham
+label5.TextSize = 16
+label5.TextColor3 = Color3.new(1, 1, 1)
+label5.BackgroundTransparency = 1
+label5.TextXAlignment = Enum.TextXAlignment.Left
+
+local btn5 = Instance.new("TextButton", farmSection5)
+btn5.Size = UDim2.new(0, 80, 0, 30)
+btn5.Position = UDim2.new(1, -90, 0, 15)
+btn5.Text = "OFF"
+btn5.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+btn5.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", btn5)
 
 --- SECTION MOVEMENT ---
 local moveSection = Instance.new("Frame", scroll)
@@ -109,7 +131,6 @@ moveSection.Size = UDim2.new(0, 310, 0, 180)
 moveSection.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Instance.new("UICorner", moveSection)
 
--- WalkSpeed Slider UI
 local labelWS = Instance.new("TextLabel", moveSection)
 labelWS.Size = UDim2.new(0, 200, 0, 20)
 labelWS.Position = UDim2.new(0, 10, 0, 35)
@@ -132,7 +153,6 @@ dotWS.Position = UDim2.new(0, 0, 0.5, -9)
 dotWS.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
 Instance.new("UICorner", dotWS).CornerRadius = UDim.new(1, 0)
 
--- JumpPower Slider UI
 local labelJP = Instance.new("TextLabel", moveSection)
 labelJP.Size = UDim2.new(0, 200, 0, 20)
 labelJP.Position = UDim2.new(0, 10, 0, 105)
@@ -155,7 +175,7 @@ dotJP.Position = UDim2.new(0, 0, 0.5, -9)
 dotJP.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
 Instance.new("UICorner", dotJP).CornerRadius = UDim.new(1, 0)
 
--- 4. LOGIQUE DRAG ET SLIDERS restants
+-- 4. LOGIQUE
 local function makeDraggable(obj, target)
     target = target or obj
     local dragging, dragStart, startPos
@@ -201,14 +221,19 @@ makeDraggable(header, frame)
 setupSlider(sliderWS, dotWS, 16, 250, function(v) walkSpeedValue = v labelWS.Text = "WalkSpeed: "..v end)
 setupSlider(sliderJP, dotJP, 50, 350, function(v) jumpPowerValue = v labelJP.Text = "JumpPower: "..v end)
 
--- 5. BOUTONS
 logo.MouseButton1Up:Connect(function() frame.Visible = not frame.Visible end)
 close.MouseButton1Click:Connect(function() frame.Visible = false end)
 
-btnAF.MouseButton1Click:Connect(function()
-    autoFarmActive = not autoFarmActive
-    btnAF.Text = autoFarmActive and "ON" or "OFF"
-    btnAF.BackgroundColor3 = autoFarmActive and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
+btn1.MouseButton1Click:Connect(function()
+    farm1Active = not farm1Active
+    btn1.Text = farm1Active and "ON" or "OFF"
+    btn1.BackgroundColor3 = farm1Active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
+end)
+
+btn5.MouseButton1Click:Connect(function()
+    farm5Active = not farm5Active
+    btn5.Text = farm5Active and "ON" or "OFF"
+    btn5.BackgroundColor3 = farm5Active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
 end)
 
 -- BOUCLES
@@ -222,11 +247,14 @@ end)
 
 task.spawn(function()
     while true do
-        if autoFarmActive then
-            pcall(function()
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(locations[1])
-            end)
+        if farm1Active then
+            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos1) end)
             task.wait(farmWaitTime)
-        else task.wait(0.5) end
+        elseif farm5Active then
+            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos5) end)
+            task.wait(farmWaitTime)
+        else
+            task.wait(0.5)
+        end
     end
 end)
