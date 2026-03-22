@@ -19,7 +19,7 @@ local farmWaitTime = 1.0
 
 -- Liste avec la coordonnée unique demandée
 local locations = {
-    Vector3.new(225.466, 4, 8.099)
+    Vector3.new(225.466, 8, 8.099)
 }
 
 -- 3. INTERFACE
