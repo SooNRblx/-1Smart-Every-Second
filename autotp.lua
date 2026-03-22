@@ -3,6 +3,7 @@ local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
 
 -- Nettoyage
 if playerGui:FindFirstChild("AppleAutoFarmGui") then
@@ -10,16 +11,18 @@ if playerGui:FindFirstChild("AppleAutoFarmGui") then
 end
 
 -- 2. VARIABLES
-local farm1Active = false
-local farm5Active = false
-local farm15Active = false
+local farmActive = {f1 = false, f5 = false, f15 = false, f50 = false}
+local antiAfkActive = false
 local walkSpeedValue = 16
 local jumpPowerValue = 50
 local farmWaitTime = 0.30
 
-local pos1 = Vector3.new(225.466, 8, 8.099)
-local pos5 = Vector3.new(225.78, 8, -71.401)
-local pos15 = Vector3.new(244.28, 8, -152.901)
+local positions = {
+    f1 = Vector3.new(225.466, 8, 8.099),
+    f5 = Vector3.new(225.78, 8, -71.401),
+    f15 = Vector3.new(244.28, 8, -152.901),
+    f50 = Vector3.new(90.266, 248.78, -232.776)
+}
 
 -- 3. INTERFACE
 local screenGui = Instance.new("ScreenGui", playerGui)
@@ -37,8 +40,8 @@ logo.TextSize = 35
 Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 12)
 
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 350, 0, 380) -- Agrandissement pour le 3ème bouton
-frame.Position = UDim2.new(0.5, -175, 0.5, -190)
+frame.Size = UDim2.new(0, 350, 0, 400) 
+frame.Position = UDim2.new(0.5, -175, 0.5, -200)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Visible = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
@@ -72,154 +75,144 @@ scroll.Size = UDim2.new(1, -10, 1, -55)
 scroll.Position = UDim2.new(0, 5, 0, 45)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
-scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 650)
 scroll.ScrollBarThickness = 2
 
 local layout = Instance.new("UIListLayout", scroll)
-layout.Padding = UDim.new(0, 10)
+layout.Padding = UDim.new(0, 12)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Fonction utilitaire pour créer les sections de farm
-local function createFarmSection(name, parent)
+-- Fonctions utilitaires UI
+local function createSection(titleText, height, parent)
     local sec = Instance.new("Frame", parent)
-    sec.Size = UDim2.new(0, 310, 0, 60)
+    sec.Size = UDim2.new(0, 320, 0, height)
     sec.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     Instance.new("UICorner", sec)
-
+    
     local lab = Instance.new("TextLabel", sec)
-    lab.Size = UDim2.new(0, 150, 0, 30)
-    lab.Position = UDim2.new(0, 10, 0, 15)
+    lab.Size = UDim2.new(0, 100, 0, 25)
+    lab.Position = UDim2.new(0, 10, 0, 5)
+    lab.Text = titleText
+    lab.Font = Enum.Font.GothamBold
+    lab.TextSize = 12
+    lab.TextColor3 = Color3.fromRGB(180, 180, 180)
+    lab.BackgroundTransparency = 1
+    lab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    return sec
+end
+
+local function createToggle(name, yPos, parent)
+    local container = Instance.new("Frame", parent)
+    container.Size = UDim2.new(1, -20, 0, 35)
+    container.Position = UDim2.new(0, 10, 0, yPos)
+    container.BackgroundTransparency = 1
+    
+    local lab = Instance.new("TextLabel", container)
+    lab.Size = UDim2.new(0, 150, 1, 0)
     lab.Text = name
     lab.Font = Enum.Font.Gotham
-    lab.TextSize = 16
+    lab.TextSize = 15
     lab.TextColor3 = Color3.new(1, 1, 1)
     lab.BackgroundTransparency = 1
     lab.TextXAlignment = Enum.TextXAlignment.Left
 
-    local btn = Instance.new("TextButton", sec)
-    btn.Size = UDim2.new(0, 80, 0, 30)
-    btn.Position = UDim2.new(1, -90, 0, 15)
+    local btn = Instance.new("TextButton", container)
+    btn.Size = UDim2.new(0, 70, 0, 28)
+    btn.Position = UDim2.new(1, -70, 0.5, -14)
     btn.Text = "OFF"
-    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     btn.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", btn)
     
     return btn
 end
 
-local btn1 = createFarmSection("+1 Wins", scroll)
-local btn5 = createFarmSection("+5 Wins", scroll)
-local btn15 = createFarmSection("+15 Wins", scroll)
+-- SECTION AUTO FARM
+local farmSec = createSection("Auto Farm", 180, scroll)
+local btn1 = createToggle("+1 Wins", 35, farmSec)
+local btn5 = createToggle("+5 Wins", 70, farmSec)
+local btn15 = createToggle("+15 Wins", 105, farmSec)
+local btn50 = createToggle("+50 Wins", 140, farmSec)
 
---- SECTION MOVEMENT ---
-local moveSection = Instance.new("Frame", scroll)
-moveSection.Size = UDim2.new(0, 310, 0, 180)
-moveSection.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Instance.new("UICorner", moveSection)
+-- SECTION MOVEMENT
+local moveSec = createSection("Movement", 150, scroll)
 
-local labelWS = Instance.new("TextLabel", moveSection)
-labelWS.Size = UDim2.new(0, 200, 0, 20)
-labelWS.Position = UDim2.new(0, 10, 0, 35)
-labelWS.Text = "WalkSpeed: 16"
-labelWS.Font = Enum.Font.Gotham
-labelWS.TextSize = 15
-labelWS.TextColor3 = Color3.new(1,1,1)
-labelWS.BackgroundTransparency = 1
-labelWS.TextXAlignment = Enum.TextXAlignment.Left
+local function setupSlider(name, yPos, min, max, default, parent, callback)
+    local lab = Instance.new("TextLabel", parent)
+    lab.Size = UDim2.new(1, -20, 0, 20)
+    lab.Position = UDim2.new(0, 10, 0, yPos)
+    lab.Text = name..": "..default
+    lab.Font = Enum.Font.Gotham; lab.TextSize = 14; lab.TextColor3 = Color3.new(1,1,1); lab.BackgroundTransparency = 1; lab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local slideBack = Instance.new("Frame", parent)
+    slideBack.Size = UDim2.new(1, -40, 0, 4)
+    slideBack.Position = UDim2.new(0, 20, 0, yPos + 25)
+    slideBack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    
+    local dot = Instance.new("Frame", slideBack)
+    dot.Size = UDim2.new(0, 16, 0, 16)
+    dot.Position = UDim2.new(0, 0, 0.5, -8)
+    dot.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+    
+    local isSliding = false
+    local function update(input)
+        local rel = math.clamp((input.Position.X - slideBack.AbsolutePosition.X) / slideBack.AbsoluteSize.X, 0, 1)
+        dot.Position = UDim2.new(rel, -8, 0.5, -8)
+        local val = math.floor(min + (rel * (max - min)))
+        lab.Text = name..": "..val
+        callback(val)
+    end
+    slideBack.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then isSliding = true scroll.ScrollingEnabled = false update(input) end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then update(input) end
+    end)
+    UserInputService.InputEnded:Connect(function() isSliding = false scroll.ScrollingEnabled = true end)
+end
 
-local sliderWS = Instance.new("Frame", moveSection)
-sliderWS.Size = UDim2.new(0, 260, 0, 6)
-sliderWS.Position = UDim2.new(0.5, -130, 0, 65)
-sliderWS.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Instance.new("UICorner", sliderWS)
+setupSlider("WalkSpeed", 30, 16, 300, 16, moveSec, function(v) walkSpeedValue = v end)
+setupSlider("JumpPower", 85, 50, 500, 50, moveSec, function(v) jumpPowerValue = v end)
 
-local dotWS = Instance.new("Frame", sliderWS)
-dotWS.Size = UDim2.new(0, 18, 0, 18)
-dotWS.Position = UDim2.new(0, 0, 0.5, -9)
-dotWS.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
-Instance.new("UICorner", dotWS).CornerRadius = UDim.new(1, 0)
+-- SECTION MISC
+local miscSec = createSection("Misc", 70, scroll)
+local btnAntiAfk = createToggle("Anti-AFK", 30, miscSec)
 
-local labelJP = Instance.new("TextLabel", moveSection)
-labelJP.Size = UDim2.new(0, 200, 0, 20)
-labelJP.Position = UDim2.new(0, 10, 0, 105)
-labelJP.Text = "JumpPower: 50"
-labelJP.Font = Enum.Font.Gotham
-labelJP.TextSize = 15
-labelJP.TextColor3 = Color3.new(1,1,1)
-labelJP.BackgroundTransparency = 1
-labelJP.TextXAlignment = Enum.TextXAlignment.Left
-
-local sliderJP = Instance.new("Frame", moveSection)
-sliderJP.Size = UDim2.new(0, 260, 0, 6)
-sliderJP.Position = UDim2.new(0.5, -130, 0, 135)
-sliderJP.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Instance.new("UICorner", sliderJP)
-
-local dotJP = Instance.new("Frame", sliderJP)
-dotJP.Size = UDim2.new(0, 18, 0, 18)
-dotJP.Position = UDim2.new(0, 0, 0.5, -9)
-dotJP.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
-Instance.new("UICorner", dotJP).CornerRadius = UDim.new(1, 0)
-
--- 4. LOGIQUE
+-- 4. LOGIQUE DRAG
 local function makeDraggable(obj, target)
     target = target or obj
     local dragging, dragStart, startPos
     obj.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true dragStart = input.Position startPos = target.Position
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true dragStart = input.Position startPos = target.Position end
     end)
     obj.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
     obj.InputEnded:Connect(function() dragging = false end)
 end
+makeDraggable(logo); makeDraggable(header, frame)
 
-local function setupSlider(back, dot, min, max, callback)
-    local isSliding = false
-    local function update(input)
-        local relPos = math.clamp((input.Position.X - back.AbsolutePosition.X) / back.AbsoluteSize.X, 0, 1)
-        dot.Position = UDim2.new(relPos, -9, 0.5, -9)
-        local val = math.floor(min + (relPos * (max - min)))
-        callback(val)
-    end
-    back.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isSliding = true scroll.ScrollingEnabled = false update(input)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if isSliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            update(input)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function() isSliding = false scroll.ScrollingEnabled = true end)
+-- 5. INTERACTIONS BOUTONS
+local function updateBtnStyle(btn, active)
+    btn.Text = active and "ON" or "OFF"
+    btn.BackgroundColor3 = active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(70, 70, 70)
 end
 
-makeDraggable(logo)
-makeDraggable(frame)
-makeDraggable(header, frame)
-
-setupSlider(sliderWS, dotWS, 16, 250, function(v) walkSpeedValue = v labelWS.Text = "WalkSpeed: "..v end)
-setupSlider(sliderJP, dotJP, 50, 350, function(v) jumpPowerValue = v labelJP.Text = "JumpPower: "..v end)
-
-logo.MouseButton1Up:Connect(function() frame.Visible = not frame.Visible end)
+logo.MouseButton1Click:Connect(function() frame.Visible = not frame.Visible end)
 close.MouseButton1Click:Connect(function() frame.Visible = false end)
 
-local function toggleFarm(active, btn)
-    btn.Text = active and "ON" or "OFF"
-    btn.BackgroundColor3 = active and Color3.fromRGB(40, 160, 40) or Color3.fromRGB(80, 80, 80)
-end
+btn1.MouseButton1Click:Connect(function() farmActive.f1 = not farmActive.f1 updateBtnStyle(btn1, farmActive.f1) end)
+btn5.MouseButton1Click:Connect(function() farmActive.f5 = not farmActive.f5 updateBtnStyle(btn5, farmActive.f5) end)
+btn15.MouseButton1Click:Connect(function() farmActive.f15 = not farmActive.f15 updateBtnStyle(btn15, farmActive.f15) end)
+btn50.MouseButton1Click:Connect(function() farmActive.f50 = not farmActive.f50 updateBtnStyle(btn50, farmActive.f50) end)
+btnAntiAfk.MouseButton1Click:Connect(function() antiAfkActive = not antiAfkActive updateBtnStyle(btnAntiAfk, antiAfkActive) end)
 
-btn1.MouseButton1Click:Connect(function() farm1Active = not farm1Active toggleFarm(farm1Active, btn1) end)
-btn5.MouseButton1Click:Connect(function() farm5Active = not farm5Active toggleFarm(farm5Active, btn5) end)
-btn15.MouseButton1Click:Connect(function() farm15Active = not farm15Active toggleFarm(farm15Active, btn15) end)
-
--- BOUCLES
+-- BOUCLES DE FONCTIONNEMENT
 RunService.Stepped:Connect(function()
     pcall(function()
         local hum = player.Character.Humanoid
@@ -230,17 +223,25 @@ end)
 
 task.spawn(function()
     while true do
-        if farm1Active then
-            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos1) end)
-            task.wait(farmWaitTime)
-        elseif farm5Active then
-            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos5) end)
-            task.wait(farmWaitTime)
-        elseif farm15Active then
-            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos15) end)
+        local pos = nil
+        if farmActive.f1 then pos = positions.f1
+        elseif farmActive.f5 then pos = positions.f5
+        elseif farmActive.f15 then pos = positions.f15
+        elseif farmActive.f50 then pos = positions.f50 end
+        
+        if pos then
+            pcall(function() player.Character.HumanoidRootPart.CFrame = CFrame.new(pos) end)
             task.wait(farmWaitTime)
         else
             task.wait(0.5)
         end
+    end
+end)
+
+-- Anti-AFK
+player.Idled:Connect(function()
+    if antiAfkActive then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
     end
 end)
