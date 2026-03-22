@@ -17,17 +17,17 @@ local walkSpeedValue = 16
 local jumpPowerValue = 50
 local farmWaitTime = 1.0
 
--- Liste avec la coordonnée unique demandée
+-- Nouvelle coordonnée mise à jour
 local locations = {
-    Vector3.new(225.466, 8, 8.099)
+    Vector3.new(225.466, 8, -0.234)
 }
 
 -- 3. INTERFACE
 local screenGui = Instance.new("ScreenGui", playerGui)
 screenGui.Name = "AppleAutoFarmGui"
 screenGui.ResetOnSpawn = false
-screenGui.DisplayOrder = 999999999 -- Met l'UI au-dessus de tout
-screenGui.IgnoreGuiInset = true    -- Permet de coller les bords de l'écran
+screenGui.DisplayOrder = 999999999 -- Priorité d'affichage maximale
+screenGui.IgnoreGuiInset = true    
 
 local logo = Instance.new("TextButton", screenGui)
 logo.Size = UDim2.new(0, 60, 0, 60)
@@ -109,7 +109,7 @@ secTitleFarm.TextXAlignment = Enum.TextXAlignment.Left
 local labelAF = Instance.new("TextLabel", farmSection)
 labelAF.Size = UDim2.new(0, 150, 0, 30)
 labelAF.Position = UDim2.new(0, 10, 0, 35)
-labelAF.Text = "Auto Farm"
+labelAF.Text = "+1 Wins" 
 labelAF.Font = Enum.Font.Gotham
 labelAF.TextSize = 16
 labelAF.TextColor3 = Color3.new(1, 1, 1)
